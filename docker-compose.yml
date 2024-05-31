@@ -47,3 +47,23 @@ services:
       - "5002"
     build:
       context: ./workers/python
+  php-service:
+    container_name: php-service
+    hostname: php-service
+    image: ryderphp:latest
+    environment:
+      - PORT=5003
+    expose:
+      - "5003"
+    build:
+      context: ./workers/php
+  ruby-service:
+    container_name: ruby-service
+    hostname: ruby-service
+    image: ryderruby:latest
+    environment:
+      - PORT=5004
+    expose:
+      - "5004"
+    build:
+      context: ./workers/ruby

@@ -11,6 +11,8 @@ const PORT = process.env.PORT || 3000;
 const JAVAS_PORT = process.env.JAVAS_PORT || 5000;
 const PYS_PORT = process.env.PYS_PORT || 5002;
 const CS_PORT = process.env.CS_PORT || 5001;
+const PHP_PORT = process.env.PHP_PORT || 5003;
+const RUBY_PORT = process.env.RUBY_PORT || 5004;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -49,6 +51,16 @@ app.post("/compile-and-run", async (req, res) => {
           text: decodedText,
         });
         break;
+        case "php":
+          response = await axios.post(`http://php-service:${PHP_PORT}/compile-and-run`, {
+            text: decodedText,
+          });
+          break;
+        case "ruby":
+          response = await axios.post(`http://ruby-service:${RUBY_PORT}/compile-and-run`, {
+            text: decodedText,
+          });
+          break;
       default:
         return res.status(400).json({ error: "Unsupported language" });
     }

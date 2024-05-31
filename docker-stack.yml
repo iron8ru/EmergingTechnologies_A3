@@ -40,3 +40,20 @@ services:
     deploy:
       replicas: 1
 
+  php-service:
+    image: ryderphp:latest
+    environment:
+      - PORT=5003
+    expose:
+      - "5003"
+    deploy:
+      replicas: 1
+
+  ruby-service:
+    image: ryderruby:latest
+    environment:
+      - PORT=5004
+    expose:
+      - "5004"
+    deploy:
+      replicas: 1
