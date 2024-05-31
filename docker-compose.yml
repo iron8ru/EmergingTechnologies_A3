@@ -1,0 +1,49 @@
+version: '3.3'
+
+services:
+  ryder:
+    container_name: ryder
+    hostname: ryder
+    image: ryder:latest
+    build:
+      context: ./ryder
+    ports:
+      - "3000:3000"
+    environment:
+      - JAVAS_PORT=5000
+      - CS_PORT=5001
+      - PYS_PORT=5002
+    links:
+      - java-service
+      - c-service
+      - python-service
+  java-service:
+    container_name: java-service
+    hostname: java-service
+    image: ryderjava:latest
+    environment:
+      - PORT=5000
+    expose:
+      - "5000"
+    build:
+      context: ./workers/javac
+  c-service:
+    container_name: c-service
+    hostname: c-service
+    image: ryderc:latest
+    environment:
+      - PORT=5001
+    expose:
+      - "5001"
+    build:
+      context: ./workers/c
+  python-service:
+    container_name: python-service
+    hostname: python-service
+    image: ryderpy:latest
+    environment:
+      - PORT=5002
+    expose:
+      - "5002"
+    build:
+      context: ./workers/python

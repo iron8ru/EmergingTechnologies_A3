@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Compiler</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .result-textarea {
+            height: 200px;
+            resize: none;
+            margin-top: 10px;
+            border: 1px solid #ced4da;
+            padding: 10px;
+            font-family: monospace;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <button class="nav-link active" id="java-tab" onclick="selectLanguage('java')">Java</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="c-tab" onclick="selectLanguage('c')">C</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="python-tab" onclick="selectLanguage('python')">Python</button>
+            </li>
+        </ul>
+        <div class="form-group mt-3">
+            <textarea id="code-input" class="form-control" rows="10" placeholder="Enter your code here"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="compileCode()">Compile</button>
+        <div class="form-group">
+            <textarea id="output" class="result-textarea" readonly></textarea>
+        </div>
+        <div id="error-message" class="error-message" style="display: none;"></div>
+    </div>
+
+    <script>
+        function selectLanguage(language) {
+            // Remove 'active' class from all tabs
+            document.querySelectorAll('.nav-link').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Add 'active' class to the selected tab
+            document.getElementById(`${language}-tab`).classList.add('active');
+        }
+
+        async function compileCode() {
+            const code = document.getElementById('code-input').value;
+            const language = document.querySelector('.nav-link.active').innerText.toLowerCase();
+
+            try {
+                const response = await fetch('http://localhost:3000/compile-and-run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: btoa(code), language: language })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to compile code');
+                }
+
+                const data = await response.json();
+                document.getElementById('output').value = data.output;
+                document.getElementById('error-message').style.display = 'none';
+            } catch (error) {
+                console.error('Error compiling code:', error.message);
+                document.getElementById('output').value = '';
+                document.getElementById('error-message').innerText = error.message;
+                document.getElementById('error-message').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+
+</html>
