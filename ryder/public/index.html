@@ -3,55 +3,126 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Code Compiler</title>
-    <!-- Bootstrap CSS -->
+    <title>Web App Compiler</title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     />
+    <!-- Include CodeMirror CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css"
+    />
+    <!-- Include CodeMirror Theme -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/material-darker.min.css"
+    />
+    <!-- Include CodeMirror JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+    <!-- Include CodeMirror Java Mode -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/clike/clike.min.js"></script>
+    <!-- Include CodeMirror Python Mode -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
+    <!-- Include CodeMirror Ruby Mode -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/ruby/ruby.min.js"></script>
+    <!-- Include CodeMirror Match Brackets -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/addon/edit/matchbrackets.min.js"></script>
+    <!-- Include CodeMirror Auto Close Brackets -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/addon/edit/closebrackets.min.js"></script>
     <style>
-      .result-textarea {
-        height: 300px;
-        width: auto;
-        resize: none;
-        margin-top: 10px;
-        border: 1px solid #ced4da;
-        padding: 10px;
-        font-family: monospace;
-        background-color: #f1f1f1; /* Different color for output textarea */
+      body {
+        background-color: #f0f0f0; /* Light background color */
+        font-family: Consolas, "Courier New", monospace; /* Use Consolas font */
       }
 
-      .error-message {
-        color: red;
+      .header {
+        font-family: Consolas, "Courier New", monospace; /* Use Consolas font */
+        font-size: 40px;
         font-weight: bold;
+        text-align: center;
+        margin-bottom: 30px;
+        margin-top: 50px;
       }
 
       .custom-container {
-        background-color: #fff;
+        background-color: #ffffff; /* White container background color */
         border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        margin-top: 20px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-top: 50px;
       }
 
-      .nav-tabs .nav-link.active {
+      .form-control {
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        background-color: #ffffff; /* White background color for input */
+        color: #333333; /* Input text color */
+      }
+
+      .CodeMirror {
+        height: auto;
+        font-family: Consolas, "Courier New", monospace; /* Use Consolas font */
+      }
+
+      .nav-tabs {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .nav-item {
+        flex: 1;
+      }
+
+      .nav-link {
+        color: #333333;
+        border: none;
+        border-radius: 5px;
+        width: 100%;
+      }
+
+      .nav-link.active {
         background-color: #007bff;
-        color: #fff;
+        color: #ffffff;
       }
 
-      .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
+      .btn-compile {
+        background-color: #28a745; /* Green color for the Compile button */
+        border-color: #28a745;
+        border-radius: 5px;
+        color: #ffffff;
       }
 
-      .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #004085;
+      .btn-compile:hover {
+        background-color: #218838; /* Darker green for hover effect */
+        border-color: #1e7e34;
+      }
+
+      .result-textarea {
+        height: 200px; /* Fixed height for the output container */
+        width: 100%;
+        resize: none;
+        margin-top: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        padding: 10px;
+        font-family: monospace;
+        background-color: #f1f1f1;
+        color: #333333;
+        overflow-y: auto; /* Enable vertical scrolling */
+      }
+
+      .error-message {
+        color: #dc3545; /* Red color for error messages */
+        font-weight: bold;
+        margin-top: 10px;
       }
     </style>
   </head>
 
   <body>
+    <div class="header">Web App Compiler</div>
     <div class="container custom-container">
       <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -100,7 +171,9 @@
           placeholder="Enter your code here"
         ></textarea>
       </div>
-      <button class="btn btn-primary" onclick="compileCode()">Compile</button>
+      <button class="btn btn-compile btn-block" onclick="compileCode()">
+        Compile
+      </button>
       <div class="form-group mt-3">
         <textarea id="output" class="result-textarea" readonly></textarea>
       </div>
@@ -108,18 +181,44 @@
     </div>
 
     <script>
+      var codeEditor = CodeMirror.fromTextArea(
+        document.getElementById("code-input"),
+        {
+          lineNumbers: true,
+          matchBrackets: true,
+          autoCloseBrackets: true,
+          mode: "text/x-java", // Default to Java mode
+          theme: "material-darker", // Choose a theme
+        }
+      );
+
       function selectLanguage(language) {
-        // Remove 'active' class from all tabs
-        document.querySelectorAll(".nav-link").forEach((tab) => {
+        document.querySelectorAll(".nav-link").forEach(function (tab) {
           tab.classList.remove("active");
         });
+        document.getElementById(language + "-tab").classList.add("active");
 
-        // Add 'active' class to the selected tab
-        document.getElementById(`${language}-tab`).classList.add("active");
+        switch (language) {
+          case "java":
+            codeEditor.setOption("mode", "text/x-java");
+            break;
+          case "c":
+            codeEditor.setOption("mode", "text/x-csrc");
+            break;
+          case "python":
+            codeEditor.setOption("mode", "text/x-python");
+            break;
+          case "php":
+            codeEditor.setOption("mode", "application/x-httpd-php");
+            break;
+          case "ruby":
+            codeEditor.setOption("mode", "text/x-ruby");
+            break;
+        }
       }
 
       async function compileCode() {
-        const code = document.getElementById("code-input").value;
+        const code = codeEditor.getValue();
         const language = document
           .querySelector(".nav-link.active")
           .innerText.toLowerCase();
@@ -143,9 +242,6 @@
           const data = await response.json();
           document.getElementById("output").value = data.output;
           document.getElementById("error-message").style.display = "none";
-
-          // Clear the code input textarea after successful compilation
-          document.getElementById("code-input").value = "";
         } catch (error) {
           console.error("Error compiling code:", error.message);
           document.getElementById("output").value = "";
